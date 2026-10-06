@@ -1,0 +1,30 @@
+# Ambiente / segredos
+.env
+.env.*
+!.env.example
+.venv/
+
+# Bytecode / build
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Caches de ferramentas
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editor
+.vscode/
+.idea/
+
+# SO
+.DS_Store
+Thumbs.db
+
+# Claude Code (config pessoal)
+.claude/settings.local.json
+
+# Nota: alembic/versions/*.py DEVE ser versionado (não ignore as migrations).

@@ -1,0 +1,53 @@
+[project]
+name = "ecommerce"
+version = "0.1.0"
+description = "Ecommerce API"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.141.1",
+    "sqlalchemy[asyncio]>=2.0",
+    "pydantic-settings>=2.0",
+    "psycopg[binary]>=3.2",   # driver Postgres síncrono do Alembic
+    "asyncpg>=0.30.0",        # driver Postgres assíncrono da app
+    "alembic>=1.13",          # migrations
+    "pyjwt>=2.10",            # tokens JWT
+    "bcrypt>=4.2",            # hash de senha
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["main"]
+
+[tool.setuptools.packages.find]
+include = ["api*", "core*", "domains*"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.8",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+# E/W pycodestyle, F pyflakes, I import sort, UP pyupgrade, B bugbear, SIM simplify
+select = ["E", "W", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"alembic/versions/*" = ["E501"]   # migrations geradas tem linhas longas
+
+[tool.ruff.lint.flake8-bugbear]
+# Depends/Query/Path em valor default é o idioma do FastAPI, não o bug que o B008 caça.
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Body",
+    "fastapi.Header",
+    "fastapi.Security",
+]
