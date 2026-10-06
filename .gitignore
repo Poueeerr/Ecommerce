@@ -28,3 +28,6 @@ Thumbs.db
 .claude/settings.local.json
 
 # Nota: alembic/versions/*.py DEVE ser versionado (não ignore as migrations).
+
+# Seed local com credenciais de desenvolvimento
+scripts/seed_admin.py
