@@ -2,6 +2,7 @@ from collections.abc import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from domains.products.models.product_model import ProductModel
 
@@ -16,11 +17,13 @@ class ProductsRepository:
         return product
 
     async def get_all(self) -> Sequence[ProductModel]:
-        result = await self.db.execute(select(ProductModel))
+        result = await self.db.execute(
+            select(ProductModel).options(selectinload(ProductModel.inventory))
+        )
         return result.scalars().all()
 
     async def get_by_category(self, category, offset, limit) -> Sequence[ProductModel]:
-        query = select(ProductModel)
+        query = select(ProductModel).options(selectinload(ProductModel.inventory))
 
         if category:
             query = query.where(ProductModel.product_type == category)

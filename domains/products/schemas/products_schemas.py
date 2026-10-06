@@ -26,6 +26,7 @@ class Product(_FromModel):
     product_type: ProductType
     product_price: float
     product_description: str
+    stock_quantity: int
     created_at: datetime
     updated_at: datetime
 

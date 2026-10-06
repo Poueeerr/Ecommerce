@@ -1,5 +1,6 @@
-import uuid
 from datetime import datetime
+import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Enum, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -19,8 +20,8 @@ class ProductModel(Base):
     product_type: Mapped[ProductType] = mapped_column(
         Enum(
             ProductType,
-            native_enum=False,
-            values_callable=lambda enum: [m.value for m in enum],
+            native_enum=False,  
+            values_callable=lambda enum: [m.value for m in enum], 
         ),
         default=ProductType.GENERIC,
     )
@@ -31,6 +32,13 @@ class ProductModel(Base):
     inventory: Mapped[list["InventoryModel"]] = relationship(
         back_populates="product"
     )
+
+    @property
+    def stock_quantity(self) -> int:
+        return sum(
+            inventory.quantity - inventory.reserved_quantity
+            for inventory in self.inventory
+        )
 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
