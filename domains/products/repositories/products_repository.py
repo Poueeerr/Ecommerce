@@ -11,14 +11,9 @@ class ProductsRepository:
         self.db = db
 
     async def register_product(self, product: ProductModel) -> ProductModel:
-        try:
-            self.db.add(product)
-            await self.db.commit()
-            await self.db.refresh(product)
-            return product
-        except Exception:
-            await self.db.rollback()
-            raise
+        self.db.add(product)
+        await self.db.flush()
+        return product
 
     async def get_all(self) -> Sequence[ProductModel]:
         result = await self.db.execute(select(ProductModel))

@@ -1,31 +1,32 @@
-from typing import Annotated, List, Optional
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.middlewares.auth_guard import auth_guard
+from api.middlewares.auth_guard import require_admin
 from core.database import get_db
 from domains.inventory.repositories.inventory_repository import InventoryRepository
+from domains.inventory.services.inventory_service import InventoryService
 from domains.products.repositories.products_repository import ProductsRepository
-from domains.products.schemas.products_schemas import Product, ProductRegister, PaginatedProduct
+from domains.products.schemas.products_schemas import PaginatedProduct, Product, ProductRegister
+from domains.products.services.product_registration_service import ProductRegistrationService
 from domains.products.services.products_service import ProductsService
-from domains.users.users_enums import UserRole
-from domains.users.users_exceptions import AdminRequired
 
 router = APIRouter()
 
 
 def get_products_service(db: AsyncSession = Depends(get_db)) -> ProductsService:
-    return ProductsService(
-        ProductsRepository(db),
-        InventoryRepository(db),
+    return ProductsService(ProductsRepository(db))
+
+
+def get_product_registration_service(
+    db: AsyncSession = Depends(get_db),
+) -> ProductRegistrationService:
+    return ProductRegistrationService(
+        db,
+        ProductsService(ProductsRepository(db)),
+        InventoryService(InventoryRepository(db)),
     )
-
-def require_admin(current_user: Annotated[dict, Depends(auth_guard)]) -> dict:
-    if current_user["role"] != UserRole.ADMIN:
-        raise AdminRequired
-    return current_user
-
 
 @router.get("/")
 def route_check():
@@ -35,29 +36,31 @@ def route_check():
 async def register_product(
     product_data: ProductRegister,
     _admin: Annotated[dict, Depends(require_admin)],
-    products_service: ProductsService = Depends(get_products_service),
+    registration_service: ProductRegistrationService = Depends(
+        get_product_registration_service
+    ),
 
 ) -> None:
-    await products_service.register_product(product_data)
+    await registration_service.register(product_data)
 
 
-@router.get("/all", response_model=List[Product])
+@router.get("/all", response_model=list[Product])
 async def get_all(
     _admin: Annotated[dict, Depends(require_admin)],
     products_service: ProductsService = Depends(get_products_service),
-) -> List[Product]:
+) -> list[Product]:
     return await products_service.get_all()
-    
-@router.get("/category/{category}")
+
+@router.get("/category/{category}", response_model=list[Product])
 async def get_product_by_category(
     category: str,
     products_service: ProductsService = Depends(get_products_service)
-) -> List[Product]:
+) -> list[Product]:
     return await products_service.get_by_category(category)
 
 @router.get("/paginated")
 async def get_by_window(
-    category: Optional[str] = Query(None),
+    category: str | None = Query(None),
     offset: int = Query(0, ge=0),
     limit: int = Query(10, le=100),
     products_service: ProductsService = Depends(get_products_service)
@@ -71,4 +74,3 @@ async def get_by_window(
         len_products=len(products),
         next_offset=offset + limit if has_next else None,
     )
-    

@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict
 
 from domains.orders.orders_enums import OrderStatus
 
+
 class _FromModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

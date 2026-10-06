@@ -12,11 +12,6 @@ class UsersAuthRepository:
         return await self.db.scalar(select(UsersModel).where(UsersModel.email == email))
 
     async def create_user(self, user: UsersModel) -> UsersModel:
-        try:
-            self.db.add(user)
-            await self.db.commit()
-            await self.db.refresh(user)
-            return user
-        except Exception:
-            await self.db.rollback()
-            raise
+        self.db.add(user)
+        await self.db.flush()
+        return user

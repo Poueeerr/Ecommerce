@@ -23,8 +23,8 @@ class UsersModel(Base):
     role: Mapped[UserRole] = mapped_column(
         SAEnum(
             UserRole,
-            native_enum=False,  
-            values_callable=lambda enum: [m.value for m in enum], 
+            native_enum=False,
+            values_callable=lambda enum: [m.value for m in enum],
         ),
         default=UserRole.USER,
     )

@@ -1,5 +1,7 @@
 import bcrypt
 from anyio import to_thread
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from core.jwt_handler import JwtHandler
 from domains.users.models import UsersModel
 from domains.users.repositories.users_auth_repository import UsersAuthRepository
@@ -11,9 +13,11 @@ from domains.users.users_exceptions import EmailAlreadyRegistered, InvalidCreden
 class UsersAuthService:
     def __init__(
         self,
+        db: AsyncSession,
         users_auth_repository: UsersAuthRepository,
         jwt_handler: JwtHandler,
     ):
+        self.db = db
         self.users_auth_repository = users_auth_repository
         self.jwt_handler = jwt_handler
 
@@ -25,14 +29,19 @@ class UsersAuthService:
         user = UsersModel(
             name=user_data.name,
             email=user_data.email,
-            password= await self._encrypt_password(user_data.password),
+            password=await self._encrypt_password(user_data.password),
             role=role,
         )
-        await self.users_auth_repository.create_user(user)
+        try:
+            await self.users_auth_repository.create_user(user)
+            await self.db.commit()
+        except Exception:
+            await self.db.rollback()
+            raise
 
     async def login(self, user_data: UserLogin) -> Token:
         user = await self.users_auth_repository.find_by_email(user_data.email)
-        if user is None or not self._check_password(user_data.password, user.password):
+        if user is None or not await self._check_password(user_data.password, user.password):
             raise InvalidCredentials
 
         return Token(

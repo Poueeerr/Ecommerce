@@ -2,5 +2,4 @@ from core.exceptions import NotFoundError
 
 
 class OrderNotFound(NotFoundError):
-	detail = "Pedido nao encontrado"
-
+    detail = "Pedido nao encontrado"

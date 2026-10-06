@@ -1,5 +1,5 @@
-from datetime import datetime
 import uuid
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Enum, ForeignKey, Uuid, func
@@ -23,7 +23,9 @@ class OrdersModel(Base):
     )
     total: Mapped[float]
     user: Mapped["UsersModel"] = relationship(back_populates="orders")
-    order_items: Mapped[list["OrderItemsModel"]] = relationship(back_populates="order", cascade="all, delete-orphan")
+    order_items: Mapped[list["OrderItemsModel"]] = relationship(
+        back_populates="order", cascade="all, delete-orphan"
+    )
 
     status: Mapped[OrderStatus] = mapped_column(
         Enum(

@@ -52,6 +52,16 @@ Consequência prática: service não levanta `HTTPException`. Ele devolve um
 valor (`None`, `False`, um objeto) ou levanta uma exceção própria, e o
 controller traduz isso para HTTP.
 
+Services também não retornam schemas Pydantic. Repositories retornam models
+SQLAlchemy, services aplicam as regras e controllers declaram o schema de
+resposta (`response_model`). Assim, a camada de negócio não fica presa ao
+formato HTTP.
+
+Repositories não fazem `commit` nem `rollback`. Eles adicionam, consultam e
+fazem `flush` quando precisam gerar IDs. O service do caso de uso controla a
+transação inteira, fazendo um único `commit` ou `rollback`. Isso evita salvar
+um produto sem seu estoque, ou um usuário parcialmente criado.
+
 ## Injeção de dependência
 
 A fiação fica **no próprio controller**, numa função `get_*` logo acima
@@ -95,6 +105,10 @@ Três coisas para guardar:
 > `Annotated[..., Depends(...)]`. Foi removido: para o tamanho deste
 > projeto era um arquivo a mais para abrir só para descobrir de onde vinha
 > o objeto. `Depends` direto na assinatura diz tudo ali mesmo.
+
+A autorização compartilhada fica em `api/middlewares/auth_guard.py`:
+`auth_guard` valida o token e `require_admin` verifica o papel do usuário.
+Controllers importam essas dependências em vez de repetir a mesma regra.
 
 ### Dependência que não devolve nada
 

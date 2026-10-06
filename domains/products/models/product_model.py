@@ -1,6 +1,5 @@
-from datetime import datetime
 import uuid
-from typing import TYPE_CHECKING
+from datetime import datetime
 
 from sqlalchemy import Enum, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -20,8 +19,8 @@ class ProductModel(Base):
     product_type: Mapped[ProductType] = mapped_column(
         Enum(
             ProductType,
-            native_enum=False,  
-            values_callable=lambda enum: [m.value for m in enum], 
+            native_enum=False,
+            values_callable=lambda enum: [m.value for m in enum],
         ),
         default=ProductType.GENERIC,
     )

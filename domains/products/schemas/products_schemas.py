@@ -10,11 +10,14 @@ class _FromModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ProductRegister(_FromModel):
+class ProductCreate(BaseModel):
     product_name: str
     product_type: ProductType
     product_price: float = Field(gt=0)
     product_description: str
+
+
+class ProductRegister(ProductCreate):
     quantity: int = Field(ge=0)
 
 class Product(_FromModel):
