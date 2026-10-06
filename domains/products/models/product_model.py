@@ -1,15 +1,18 @@
 from datetime import datetime
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Enum, Uuid, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.database import Base
-from domains.catalog.catalog_enums import ProductType
+from domains.inventory.models.inventory_model import InventoryModel
+from domains.orders.models.order_item_model import OrderItemsModel
+from domains.products.products_enums import ProductType
 
 
-class CatalogModel(Base):
-    __tablename__ = "catalog"
+class ProductModel(Base):
+    __tablename__ = "products"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     product_name: Mapped[str]
@@ -23,5 +26,12 @@ class CatalogModel(Base):
         default=ProductType.GENERIC,
     )
     product_description: Mapped[str]
+    order_items: Mapped[list[OrderItemsModel]] = relationship(
+        back_populates="product"
+    )
+    inventory: Mapped[list["InventoryModel"]] = relationship(
+        back_populates="product"
+    )
+
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())

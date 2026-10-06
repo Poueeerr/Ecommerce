@@ -3,14 +3,14 @@ from collections.abc import Sequence
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from domains.catalog.models.catalog_model import CatalogModel
+from domains.products.models.product_model import ProductModel
 
 
-class CatalogRepository:
+class ProductsRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def register_product(self, product: CatalogModel) -> CatalogModel:
+    async def register_product(self, product: ProductModel) -> ProductModel:
         try:
             self.db.add(product)
             await self.db.commit()
@@ -20,15 +20,15 @@ class CatalogRepository:
             await self.db.rollback()
             raise
 
-    async def get_all(self) -> Sequence[CatalogModel]:
-        result = await self.db.execute(select(CatalogModel))
+    async def get_all(self) -> Sequence[ProductModel]:
+        result = await self.db.execute(select(ProductModel))
         return result.scalars().all()
 
-    async def get_by_category(self, category, offset, limit) -> Sequence[CatalogModel]:
-        query = select(CatalogModel)
+    async def get_by_category(self, category, offset, limit) -> Sequence[ProductModel]:
+        query = select(ProductModel)
 
         if category:
-            query = query.where(CatalogModel.product_type == category)
+            query = query.where(ProductModel.product_type == category)
 
         query = query.offset(offset).limit(limit)
         result = await self.db.execute(query)
