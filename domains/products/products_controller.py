@@ -62,7 +62,7 @@ async def get_product_by_category(
 async def get_by_window(
     category: str | None = Query(None),
     offset: int = Query(0, ge=0),
-    limit: int = Query(10, le=100),
+    limit: int = Query(10, ge=1, le=100),
     products_service: ProductsService = Depends(get_products_service)
 )-> PaginatedProduct:
     result = await products_service.get_by_category(category, offset, limit + 1)

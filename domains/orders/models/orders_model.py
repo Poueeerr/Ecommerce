@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime
+from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Enum, ForeignKey, Uuid, func
+from sqlalchemy import Enum, ForeignKey, Numeric, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.database import Base
@@ -21,7 +22,7 @@ class OrdersModel(Base):
         ForeignKey("users.id"),
         nullable=False,
     )
-    total: Mapped[float]
+    total: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     user: Mapped["UsersModel"] = relationship(back_populates="orders")
     order_items: Mapped[list["OrderItemsModel"]] = relationship(
         back_populates="order", cascade="all, delete-orphan"

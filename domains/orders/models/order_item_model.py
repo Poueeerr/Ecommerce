@@ -1,7 +1,8 @@
 import uuid
+from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Uuid
+from sqlalchemy import ForeignKey, Numeric, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.database import Base
@@ -16,7 +17,7 @@ class OrderItemsModel(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     quantity: Mapped[int]
-    unit_price: Mapped[int]
+    unit_price: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     order_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("orders.id"), nullable=False)
     order: Mapped["OrdersModel"] = relationship(back_populates="order_items")
     product_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("products.id"))

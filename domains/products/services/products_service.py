@@ -1,9 +1,9 @@
 
 from collections.abc import Sequence
 
-from domains.products.products_enums import ProductType
-from domains.products.products_exceptions import ProductNotFound, ProductInvalidType
 from domains.products.models.product_model import ProductModel
+from domains.products.products_enums import ProductType
+from domains.products.products_exceptions import ProductInvalidType, ProductNotFound
 from domains.products.repositories.products_repository import ProductsRepository
 from domains.products.schemas.products_schemas import ProductCreate
 

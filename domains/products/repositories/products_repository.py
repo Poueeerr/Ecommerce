@@ -28,6 +28,7 @@ class ProductsRepository:
         if category:
             query = query.where(ProductModel.product_type == category)
 
+        query = query.order_by(ProductModel.created_at, ProductModel.id)
         query = query.offset(offset).limit(limit)
         result = await self.db.execute(query)
         return result.scalars().all()
