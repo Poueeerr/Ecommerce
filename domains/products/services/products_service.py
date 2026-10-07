@@ -1,11 +1,12 @@
 
 from collections.abc import Sequence
+import uuid
 
 from domains.products.models.product_model import ProductModel
 from domains.products.products_enums import ProductType
 from domains.products.products_exceptions import ProductInvalidType, ProductNotFound
 from domains.products.repositories.products_repository import ProductsRepository
-from domains.products.schemas.products_schemas import ProductCreate
+from domains.products.schemas.products_schemas import ProductCreate, ProductUpdate
 
 
 class ProductsService:
@@ -35,3 +36,14 @@ class ProductsService:
         if not products:
             raise ProductNotFound
         return products
+
+    async def edit_product(self, product_data: ProductUpdate, product_id: uuid.UUID) -> ProductModel:
+        product = await self.products_repository.get_by_id(product_id)
+
+        if not product:
+            raise ProductNotFound(f"Product for id: {product_id} not found")
+        
+        for field, value in product_data.model_dump(exclude_unset=True).items():
+            setattr(product, field, value)
+
+        return await self.products_repository.save_update(product)

@@ -22,6 +22,18 @@ class ProductCreate(BaseModel):
     )
     product_description: str
 
+class ProductUpdate(BaseModel):
+    product_name: str | None = None
+    product_type: ProductType | None = None
+    product_price: Decimal | None = Field(
+        default=None,
+        gt=0,
+        max_digits=12,
+        decimal_places=2,
+        examples=[99.90],
+    )   
+    product_description: str | None = None
+
 
 class ProductRegister(ProductCreate):
     quantity: int = Field(ge=0)
