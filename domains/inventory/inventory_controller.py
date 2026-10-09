@@ -1,4 +1,5 @@
 from typing import Annotated
+import uuid
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,3 +28,12 @@ async def get_all(
     inventory_service: InventoryService = Depends(get_inventory_service),
 ) -> list[InventorySchema]:
     return await inventory_service.get_inventory()
+
+@router.patch("/update-stock/{product_id}/ammount/{quantity}", response_model=InventorySchema)
+async def update_stock(    
+    product_id: uuid.UUID,
+    quantity: int,
+    _admin: Annotated[dict, Depends(require_admin)],
+    inventory_service: InventoryService = Depends(get_inventory_service),
+) -> InventorySchema:
+    return await inventory_service.add_stock(product_id, quantity)

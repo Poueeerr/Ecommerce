@@ -42,7 +42,10 @@ class OrdersService:
                 if product_inventory is None:
                     raise InventoryNotFound() 
 
-                available_stock = product_inventory.quantity - product_inventory.reserved_quantity
+                available_stock = (
+                    product_inventory.total_quantity
+                    - product_inventory.reserved_quantity
+                )
                 if available_stock < item_data.quantity:
                     raise InsufficientStock()
 

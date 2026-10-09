@@ -39,7 +39,7 @@ class ProductModel(Base):
         return max(
             0,
             sum(
-                inventory.quantity - inventory.reserved_quantity
+                inventory.total_quantity - inventory.reserved_quantity
                 for inventory in self.inventory
             ),
         )

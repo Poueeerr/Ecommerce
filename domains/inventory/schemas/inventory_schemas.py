@@ -13,7 +13,7 @@ class InventorySchema(_FromModel):
     id: uuid.UUID
     product_id: uuid.UUID
     product: Product
-    quantity: int
+    total_quantity: int
     reserved_quantity: int
     created_at: datetime
     updated_at: datetime

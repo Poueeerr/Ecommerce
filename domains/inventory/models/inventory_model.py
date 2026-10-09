@@ -17,7 +17,7 @@ class InventoryModel(Base):
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     product_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("products.id"))
     product: Mapped["ProductModel"] = relationship(back_populates="inventory")
-    quantity: Mapped[int]
+    total_quantity: Mapped[int]
     reserved_quantity: Mapped[int]
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
