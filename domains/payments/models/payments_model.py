@@ -3,42 +3,47 @@ from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Enum, ForeignKey, Numeric, Uuid, func
+from sqlalchemy import Enum, ForeignKey, Numeric, String, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.database import Base
-from domains.orders.orders_enums import OrderStatus
+from domains.payments.payments_enums import PaymentsStatus
 
 if TYPE_CHECKING:
-    from domains.orders.models.order_item_model import OrderItemsModel
-    from domains.payments.models.payments_model import PaymentsModel
+    from domains.orders.models.orders_model import OrdersModel
     from domains.users.models.users_model import UsersModel
 
 
-class OrdersModel(Base):
-    __tablename__ = "orders"
+
+class PaymentsModel(Base):
+    __tablename__ = "payments"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+
+    order_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("orders.id"))
+    order: Mapped["OrdersModel"] = relationship(back_populates="payments")
+
     user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id"),
         nullable=False,
     )
-    total: Mapped[Decimal] = mapped_column(Numeric(12, 2))
-    user: Mapped["UsersModel"] = relationship(back_populates="orders")
-    payments: Mapped[list["PaymentsModel"]] = relationship(
-        back_populates="order", cascade="all, delete-orphan"
-    )
-    order_items: Mapped[list["OrderItemsModel"]] = relationship(
-        back_populates="order", cascade="all, delete-orphan"
-    )
+    user: Mapped["UsersModel"] = relationship(back_populates="payments")
 
-    status: Mapped[OrderStatus] = mapped_column(
+    total: Mapped[Decimal] = mapped_column(Numeric(12, 2))
+
+    status: Mapped[PaymentsStatus] = mapped_column(
         Enum(
-            OrderStatus,
+            PaymentsStatus,
             native_enum=False,
             values_callable=lambda enum: [m.value for m in enum],
         ),
-        default=OrderStatus.PAYMENT_PENDING,
+        default=PaymentsStatus.PENDING,
+    )
+
+    provider_payment_id: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+        unique=True,
     )
 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())

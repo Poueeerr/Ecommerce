@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Enum as SAEnum
+from sqlalchemy import Enum as SAEnum, String
 from sqlalchemy import Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -11,6 +11,7 @@ from domains.users.users_enums import UserRole
 
 if TYPE_CHECKING:
     from domains.orders.models.orders_model import OrdersModel
+    from domains.payments.models.payments_model import PaymentsModel
 
 
 class UsersModel(Base):
@@ -29,5 +30,9 @@ class UsersModel(Base):
         default=UserRole.USER,
     )
     orders: Mapped[list["OrdersModel"]] = relationship(back_populates="user")
+    payments: Mapped[list["PaymentsModel"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+        
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
