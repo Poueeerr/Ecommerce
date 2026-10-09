@@ -29,6 +29,7 @@ services:
       - POSTGRES_USER=ecommerce
       - POSTGRES_PASSWORD=ecommerce
       - POSTGRES_DB=ecommerce
+      - RABBITMQ_CONNECTION_URL=amqp://app:app123@rabbitmq:5672/
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - JWT_EXPIRE_IN=${JWT_EXPIRE_IN:-30}
     volumes:
@@ -38,6 +39,15 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: app
+      RABBITMQ_DEFAULT_PASS: app123
 
 volumes:
   pgdata:

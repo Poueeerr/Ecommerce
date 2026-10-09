@@ -13,6 +13,7 @@ dependencies = [
     "alembic>=1.13",          # migrations
     "pyjwt>=2.10",            # tokens JWT
     "bcrypt>=4.2",            # hash de senha
+    "aio-pika>=9.5",          # integração assíncrona com RabbitMQ
 ]
 
 [build-system]

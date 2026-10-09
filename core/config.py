@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = "ecommerce"
     POSTGRES_DB: str = "ecommerce"
     POSTGRES_PORT: int = 5432
+    RABBITMQ_DEFAULT_USER: str = "app"
+    RABBITMQ_DEFAULT_PASS: str = "app123"
+    RABBITMQ_CONNECTION_URL: str = "amqp://app:app123@localhost:5672/"
 
     jwt_secret_key: str = Field(
         default="change-me",
