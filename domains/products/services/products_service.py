@@ -29,10 +29,23 @@ class ProductsService:
     async def get_all(self) -> Sequence[ProductModel]:
         return await self.products_repository.get_all()
 
-    async def get_by_category(self, category, offset, limit) -> Sequence[ProductModel]:
+    async def get_by_category(
+        self,
+        category,
+        offset,
+        limit,
+        min_price=None,
+        max_price=None,
+    ) -> Sequence[ProductModel]:
         if category and category not in ProductType:
             raise ProductInvalidType()
-        products = await self.products_repository.get_by_category(category, offset, limit)
+        products = await self.products_repository.get_by_category(
+            category,
+            offset,
+            limit,
+            min_price,
+            max_price,
+        )
         if not products:
             raise ProductNotFound
         return products

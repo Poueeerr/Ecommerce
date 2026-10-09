@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Annotated
 import uuid
 
@@ -62,11 +63,19 @@ async def get_product_by_category(
 @router.get("/paginated")
 async def get_by_window(
     category: str | None = Query(None),
+    min_price: Decimal | None = Query(None, gt=0, examples=[99.90]),
+    max_price: Decimal | None = Query(None, gt=0, examples=[99.90]),
     offset: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=100),
     products_service: ProductsService = Depends(get_products_service)
 )-> PaginatedProduct:
-    result = await products_service.get_by_category(category, offset, limit + 1)
+    result = await products_service.get_by_category(
+        category,
+        offset,
+        limit + 1,
+        min_price,
+        max_price,
+    )
     has_next = len(result) > limit
     products = list(result[:limit])
 

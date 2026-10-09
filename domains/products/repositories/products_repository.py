@@ -27,11 +27,24 @@ class ProductsRepository:
         )
         return result.scalars().all()
 
-    async def get_by_category(self, category: ProductType, offset: int, limit: int) -> Sequence[ProductModel]:
+    async def get_by_category(
+        self,
+        category: ProductType,
+        offset: int,
+        limit: int,
+        min_price=None,
+        max_price=None,
+    ) -> Sequence[ProductModel]:
         query = select(ProductModel).options(selectinload(ProductModel.inventory))
 
         if category:
             query = query.where(ProductModel.product_type == category)
+
+        if min_price is not None:
+            query = query.where(ProductModel.product_price >= min_price)
+
+        if max_price is not None:
+            query = query.where(ProductModel.product_price <= max_price)
 
         query = query.where(ProductModel.deleted_at.is_(None))
 
