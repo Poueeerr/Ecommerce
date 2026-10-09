@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+import uuid
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,3 +27,12 @@ class InventoryRepository:
             )
         )
         return result.scalars().all()
+
+    async def get_item_by_product_id(self, product_id: uuid.UUID) -> InventoryModel:
+        result = await self.db.execute(
+            select(InventoryModel)
+            .where(InventoryModel.product_id == product_id)
+            .with_for_update()
+        )
+
+        return result.scalars().first()

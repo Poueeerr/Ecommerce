@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class InventoryModel(Base):
-    __tablename__ = "inventory_model"
+    __tablename__ = "inventory"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     product_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("products.id"))

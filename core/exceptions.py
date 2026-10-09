@@ -52,3 +52,7 @@ class ForbiddenError(AppError):
 
     status_code = 403
     detail = "Sem permissao para esta acao"
+
+class BadRequest(AppError):
+    status_code = 400
+    detail = "Algo deu errado"
