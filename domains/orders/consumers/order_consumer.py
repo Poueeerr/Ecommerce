@@ -20,9 +20,7 @@ async def process_order(message: aio_pika.IncomingMessage):
 
 
 async def main():
-    connection = await aio_pika.connect_robust(
-        settings.RABBITMQ_CONNECTION_URL
-    )
+    connection = await aio_pika.connect_robust(settings.RABBITMQ_CONNECTION_URL)
 
     async with connection:
         channel = await connection.channel()

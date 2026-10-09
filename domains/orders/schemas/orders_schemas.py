@@ -27,9 +27,11 @@ class Order(_FromModel):
     created_at: datetime
     updated_at: datetime
 
+
 class CreateOrderItem(BaseModel):
     product_id: uuid.UUID
     quantity: int = Field(gt=0)
+
 
 class CreateOrder(BaseModel):
     items: list[CreateOrderItem] = Field(min_length=1)

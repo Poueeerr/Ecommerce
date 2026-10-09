@@ -27,12 +27,8 @@ class ProductModel(Base):
     )
     product_description: Mapped[str]
     deleted_at: Mapped[datetime | None] = mapped_column(nullable=True)
-    order_items: Mapped[list[OrderItemsModel]] = relationship(
-        back_populates="product"
-    )
-    inventory: Mapped[list["InventoryModel"]] = relationship(
-        back_populates="product"
-    )
+    order_items: Mapped[list[OrderItemsModel]] = relationship(back_populates="product")
+    inventory: Mapped[list["InventoryModel"]] = relationship(back_populates="product")
 
     @property
     def stock_quantity(self) -> int:

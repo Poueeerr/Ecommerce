@@ -16,6 +16,7 @@ from domains.products.repositories.products_repository import ProductsRepository
 
 router = APIRouter()
 
+
 async def get_order_service(
     db: AsyncSession = Depends(get_db),
     order_publisher: OrderPublisher = Depends(get_order_publisher),

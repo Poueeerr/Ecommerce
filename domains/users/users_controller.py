@@ -42,6 +42,7 @@ async def login_user(
 ) -> Token:
     return await auth_service.login(user_data)
 
+
 @router.post("/register/admin", status_code=status.HTTP_201_CREATED)
 async def register_admin(
     user_data: UserRegister,
@@ -49,6 +50,7 @@ async def register_admin(
     auth_service: UsersAuthService = Depends(get_auth_service),
 ) -> None:
     await auth_service.register(user_data, valid_admin=True)
+
 
 @router.get("/me")
 def get_profile(current_user: Annotated[dict, Depends(auth_guard)]) -> UserProfile:

@@ -14,7 +14,6 @@ if TYPE_CHECKING:
     from domains.users.models.users_model import UsersModel
 
 
-
 class PaymentsModel(Base):
     __tablename__ = "payments"
 

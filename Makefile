@@ -1,7 +1,11 @@
 DC = docker compose
 API = $(DC) run --rm api
+PYTHON ?= .venv/bin/python
+RUFF = $(PYTHON) -m ruff
+PYTEST = $(PYTHON) -m pytest
+LINT_PATHS = api core domains main.py scripts tests
 
-.PHONY: help up up-d down logs build restart ps \
+.PHONY: help up up-d down logs build restart ps lint tests \
         migration migrate downgrade history current \
         psql db-shell shell
 
@@ -30,6 +34,14 @@ restart:
 
 ps: 
 	$(DC) ps
+
+lint: ## Formata e verifica o código
+	$(RUFF) format $(LINT_PATHS)
+	$(RUFF) check --fix $(LINT_PATHS)
+	$(RUFF) check $(LINT_PATHS)
+
+tests: ## Executa os testes automatizados
+	$(PYTEST)
 
 ## --- Migrations (Alembic) ---
 migration: ## Cria migration via autogenerate. Uso: make migration m="msg"

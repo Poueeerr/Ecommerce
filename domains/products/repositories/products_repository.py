@@ -1,6 +1,6 @@
-from collections.abc import Sequence
-from datetime import datetime, UTC
 import uuid
+from collections.abc import Sequence
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

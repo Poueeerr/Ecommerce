@@ -7,5 +7,6 @@ class OrderStatus(StrEnum):
     CANCELED = "canceled"
     COMPLETED = "completed"
 
+
 class OrderEvents(StrEnum):
     CREATED = "orders.created"

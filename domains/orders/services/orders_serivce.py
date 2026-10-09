@@ -26,7 +26,7 @@ class OrdersService:
         products_repository: ProductsRepository,
         inventory_repository: InventoryRepository,
         payments_repository: PaymentsRepository,
-        order_publisher: OrderPublisher
+        order_publisher: OrderPublisher,
     ):
         self.db = db
         self.orders_repository = orders_repository
@@ -37,7 +37,6 @@ class OrdersService:
 
     async def create_order(self, order_data: CreateOrder, current_user: dict) -> OrdersModel:
         async with self.db.begin():
-
             order = OrdersModel(
                 user_id=uuid.UUID(current_user["sub"]),
                 total=Decimal("0"),
@@ -47,23 +46,20 @@ class OrdersService:
             total = Decimal("0")
 
             for item_data in order_data.items:
-                product = await self.products_repository.get_by_id(
-                    item_data.product_id
-                )
+                product = await self.products_repository.get_by_id(item_data.product_id)
 
                 if product is None:
                     raise ProductNotFound()
 
-                product_inventory = (
-                    await self.inventory_repository.get_item_by_product_id(product.id)
+                product_inventory = await self.inventory_repository.get_item_by_product_id(
+                    product.id
                 )
 
                 if product_inventory is None:
                     raise InventoryNotFound()
 
                 available_stock = (
-                    product_inventory.total_quantity
-                    - product_inventory.reserved_quantity
+                    product_inventory.total_quantity - product_inventory.reserved_quantity
                 )
                 if available_stock < item_data.quantity:
                     raise InsufficientStock()

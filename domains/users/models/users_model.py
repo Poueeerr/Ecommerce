@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Enum as SAEnum, String
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy import Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -33,6 +33,6 @@ class UsersModel(Base):
     payments: Mapped[list["PaymentsModel"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
-        
+
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())

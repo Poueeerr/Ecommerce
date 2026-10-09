@@ -60,7 +60,6 @@ class UsersAuthService:
             raise UserNotFound
         return user
 
-
     @staticmethod
     async def _encrypt_password(password: str) -> str:
         hashed_password = await to_thread.run_sync(

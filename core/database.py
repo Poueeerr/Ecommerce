@@ -9,7 +9,6 @@ from sqlalchemy.orm import DeclarativeBase
 
 from core.config import settings
 
-
 engine = create_async_engine(
     settings.sqlalchemy_url,
     pool_pre_ping=True,
@@ -27,6 +26,6 @@ class Base(DeclarativeBase):
     pass
 
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
+async def get_db() -> AsyncGenerator[AsyncSession]:
     async with SessionLocal() as db:
         yield db

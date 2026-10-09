@@ -22,6 +22,7 @@ class ProductCreate(BaseModel):
     )
     product_description: str
 
+
 class ProductUpdate(BaseModel):
     product_name: str | None = None
     product_type: ProductType | None = None
@@ -31,12 +32,13 @@ class ProductUpdate(BaseModel):
         max_digits=12,
         decimal_places=2,
         examples=[99.90],
-    )   
+    )
     product_description: str | None = None
 
 
 class ProductRegister(ProductCreate):
     quantity: int = Field(ge=0)
+
 
 class Product(_FromModel):
     id: uuid.UUID
@@ -47,6 +49,7 @@ class Product(_FromModel):
     stock_quantity: int
     created_at: datetime
     updated_at: datetime
+
 
 class PaginatedProduct(BaseModel):
     model_config = ConfigDict(
