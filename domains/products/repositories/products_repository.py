@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from datetime import datetime, UTC
 import uuid
 
 from sqlalchemy import select
@@ -20,7 +21,9 @@ class ProductsRepository:
 
     async def get_all(self) -> Sequence[ProductModel]:
         result = await self.db.execute(
-            select(ProductModel).options(selectinload(ProductModel.inventory))
+            select(ProductModel)
+            .options(selectinload(ProductModel.inventory))
+            .where(ProductModel.deleted_at.is_(None))
         )
         return result.scalars().all()
 
@@ -29,6 +32,8 @@ class ProductsRepository:
 
         if category:
             query = query.where(ProductModel.product_type == category)
+
+        query = query.where(ProductModel.deleted_at.is_(None))
 
         query = query.order_by(ProductModel.created_at, ProductModel.id)
         query = query.offset(offset).limit(limit)
@@ -39,7 +44,7 @@ class ProductsRepository:
         query = (
             select(ProductModel)
             .options(selectinload(ProductModel.inventory))
-            .where(ProductModel.id == id)
+            .where(ProductModel.id == id, ProductModel.deleted_at.is_(None))
         )
         result = await self.db.execute(query)
         return result.scalars().first()
@@ -47,4 +52,9 @@ class ProductsRepository:
     async def save_update(self, product: ProductModel) -> ProductModel:
         await self.db.commit()
         await self.db.refresh(product)
+        return product
+
+    async def soft_delete(self, product: ProductModel) -> ProductModel:
+        product.deleted_at = datetime.now(UTC)
+        await self.db.commit()
         return product

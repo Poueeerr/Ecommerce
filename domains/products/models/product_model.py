@@ -26,6 +26,7 @@ class ProductModel(Base):
         default=ProductType.GENERIC,
     )
     product_description: Mapped[str]
+    deleted_at: Mapped[datetime | None] = mapped_column(nullable=True)
     order_items: Mapped[list[OrderItemsModel]] = relationship(
         back_populates="product"
     )

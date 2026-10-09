@@ -47,3 +47,11 @@ class ProductsService:
             setattr(product, field, value)
 
         return await self.products_repository.save_update(product)
+
+    async def delete_product(self, product_id: uuid.UUID) -> None:
+        product = await self.products_repository.get_by_id(product_id)
+
+        if not product:
+            raise ProductNotFound(f"Product for id: {product_id} not found")
+
+        await self.products_repository.soft_delete(product)

@@ -84,3 +84,11 @@ async def update_product(
     products_service: ProductsService = Depends(get_products_service)
 ) -> Product:
     return await products_service.edit_product(product_data, product_id)
+
+@router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product(
+    product_id: uuid.UUID,
+    _admin: Annotated[dict, Depends(require_admin)],
+    products_service: ProductsService = Depends(get_products_service),
+) -> None:
+    await products_service.delete_product(product_id)
