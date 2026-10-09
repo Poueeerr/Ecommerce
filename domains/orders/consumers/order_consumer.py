@@ -15,7 +15,7 @@ async def process_order(message: aio_pika.IncomingMessage):
 
         # - iniciar o fluxo de pagamento;
         # - enviar uma notificação;
-
+        await asyncio.sleep(60)
         print(f"Order {event['order_id']} received successfully")
 
 

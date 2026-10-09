@@ -48,6 +48,23 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: app
       RABBITMQ_DEFAULT_PASS: app123
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  consumer:
+    build: .
+    container_name: ecommerce_consumer
+    command: python -m domains.orders.consumers.order_consumer
+    volumes:
+      - .:/app
+    environment:
+      RABBITMQ_CONNECTION_URL: amqp://app:app123@rabbitmq:5672/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
 volumes:
   pgdata:
