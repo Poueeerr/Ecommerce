@@ -29,6 +29,8 @@ include = ["api*", "core*", "domains*"]
 [dependency-groups]
 dev = [
     "ruff>=0.16.8",
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
 ]
 
 [tool.ruff]
@@ -52,3 +54,7 @@ extend-immutable-calls = [
     "fastapi.Header",
     "fastapi.Security",
 ]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
