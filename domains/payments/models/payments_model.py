@@ -30,6 +30,8 @@ class PaymentsModel(Base):
 
     total: Mapped[Decimal] = mapped_column(Numeric(12, 2))
 
+    provider: Mapped[str | None] = mapped_column(String(50), nullable=True)
+
     status: Mapped[PaymentsStatus] = mapped_column(
         Enum(
             PaymentsStatus,
@@ -44,6 +46,14 @@ class PaymentsModel(Base):
         nullable=True,
         unique=True,
     )
+
+    provider_preference_id: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+        unique=True,
+    )
+
+    checkout_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
