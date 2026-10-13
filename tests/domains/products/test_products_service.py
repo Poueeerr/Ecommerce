@@ -1,14 +1,14 @@
 from decimal import Decimal
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
-from uuid import uuid4
 
 import pytest
 
 from domains.products.products_enums import ProductType
 from domains.products.products_exceptions import ProductInvalidType, ProductNotFound
-from domains.products.schemas.products_schemas import ProductCreate, ProductUpdate
+from domains.products.schemas.products_schemas import ProductUpdate
 from domains.products.services.products_service import ProductsService
+from tests.domains.products.factories import ProductFactory
 
 
 def make_service():
@@ -64,24 +64,21 @@ async def test_get_by_category_rejects_empty_result():
 @pytest.mark.asyncio
 async def test_edit_product_updates_only_received_fields():
     service, repository = make_service()
-    product_id = uuid4()
-    product = SimpleNamespace(product_name="Old", product_price=Decimal("10.00"))
+    product = ProductFactory.build_model(product_name="Old")
     repository.get_by_id.return_value = product
     repository.save_update.return_value = product
 
-    result = await service.edit_product(ProductUpdate(product_name="New"), product_id)
+    result = await service.edit_product(
+        ProductUpdate(product_name="New"),
+        product.id,
+    )
 
     assert result is product
     assert product.product_name == "New"
-    assert product.product_price == Decimal("10.00")
+    assert product.product_price == Decimal("12.50")
     repository.save_update.assert_awaited_once_with(product)
 
 
 def test_product_create_rejects_non_positive_price():
     with pytest.raises(ValueError):
-        ProductCreate(
-            product_name="Whey",
-            product_type=ProductType.WHEY_PROTEIN,
-            product_price=0,
-            product_description="Protein",
-        )
+        ProductFactory.build_create(product_price=0)

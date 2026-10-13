@@ -3,7 +3,6 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from domains.users.schemas.users_schemas import UserLogin, UserRegister
 from domains.users.services.users_auth_service import UsersAuthService
 from domains.users.users_enums import UserRole
 from domains.users.users_exceptions import (
@@ -11,6 +10,7 @@ from domains.users.users_exceptions import (
     InvalidCredentials,
     UserNotFound,
 )
+from tests.domains.users.factories import UserFactory
 
 
 def make_service(repository=None):
@@ -30,11 +30,7 @@ def make_service(repository=None):
 async def test_register_hashes_password_and_commits():
     service, repository, db = make_service()
     repository.find_by_email.return_value = None
-    user_data = UserRegister(
-        name="Admin",
-        email="admin@example.com",
-        password="password123",
-    )
+    user_data = UserFactory.build_register(name="Admin", email="admin@example.com")
 
     await service.register(user_data, valid_admin=True)
 
@@ -48,15 +44,10 @@ async def test_register_hashes_password_and_commits():
 @pytest.mark.asyncio
 async def test_register_rejects_existing_email():
     service, repository, db = make_service()
-    repository.find_by_email.return_value = object()
-    user_data = UserRegister(
-        name="User",
-        email="user@example.com",
-        password="password123",
-    )
+    repository.find_by_email.return_value = UserFactory.build_model()
 
     with pytest.raises(EmailAlreadyRegistered):
-        await service.register(user_data)
+        await service.register(UserFactory.build_register())
 
     db.commit.assert_not_awaited()
 
@@ -65,15 +56,9 @@ async def test_register_rejects_existing_email():
 async def test_login_returns_token_for_valid_credentials():
     service, repository, _ = make_service()
     password = await service._encrypt_password("password123")
-    repository.find_by_email.return_value = SimpleNamespace(
-        id="user-id",
-        email="user@example.com",
-        name="User",
-        password=password,
-        role=UserRole.USER,
-    )
+    repository.find_by_email.return_value = UserFactory.build_model(password=password)
 
-    token = await service.login(UserLogin(email="user@example.com", password="password123"))
+    token = await service.login(UserFactory.build_login())
 
     assert token.access_token == "token"
     assert token.token_type == "bearer"
@@ -86,7 +71,7 @@ async def test_login_rejects_invalid_credentials():
     repository.find_by_email.return_value = None
 
     with pytest.raises(InvalidCredentials):
-        await service.login(UserLogin(email="user@example.com", password="wrongpass"))
+        await service.login(UserFactory.build_login(password="wrongpass"))
 
 
 @pytest.mark.asyncio

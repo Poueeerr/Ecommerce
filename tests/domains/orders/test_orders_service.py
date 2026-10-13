@@ -5,10 +5,13 @@ from uuid import uuid4
 
 import pytest
 
-from domains.orders.schemas.event_schema import OrderCreatedEvent
+from domains.inventory.inventory_exceptions import InsufficientStock
 from domains.orders.orders_enums import OrderStatus
-from domains.orders.schemas.orders_schemas import CreateOrder
-from domains.orders.services.orders_serivce import OrdersService
+from domains.orders.schemas.event_schema import OrderCreatedEvent
+from domains.orders.services.orders_service import OrdersService
+from tests.domains.inventory.factories import InventoryFactory
+from tests.domains.orders.factories import OrderFactory
+from tests.domains.products.factories import ProductFactory
 
 
 def make_service():
@@ -20,10 +23,9 @@ def make_service():
     orders_repository = SimpleNamespace(
         save_order=AsyncMock(side_effect=lambda order: setattr(order, "id", order_id))
     )
-    product_id = uuid4()
-    product = SimpleNamespace(id=product_id, product_price=Decimal("12.50"))
+    product = ProductFactory.build_model()
     products_repository = SimpleNamespace(get_by_id=AsyncMock(return_value=product))
-    inventory = SimpleNamespace(total_quantity=10, reserved_quantity=2)
+    inventory = InventoryFactory.build_model(product_id=product.id)
     inventory_repository = SimpleNamespace(get_item_by_product_id=AsyncMock(return_value=inventory))
     payment_repository = SimpleNamespace(create_payment=AsyncMock())
     publisher = SimpleNamespace(publish_order_created=AsyncMock())
@@ -35,17 +37,15 @@ def make_service():
         payment_repository,
         publisher,
     )
-    return service, product_id, inventory, payment_repository, publisher
+    return service, product, inventory, payment_repository, publisher
 
 
 @pytest.mark.asyncio
 async def test_create_order_reserves_stock_creates_payment_and_publishes_event():
-    service, product_id, inventory, payment_repository, publisher = make_service()
+    service, product, inventory, payment_repository, publisher = make_service()
+    order_data = OrderFactory.build_create(product.id)
 
-    order = await service.create_order(
-        CreateOrder(items=[{"product_id": product_id, "quantity": 3}]),
-        {"sub": str(uuid4())},
-    )
+    order = await service.create_order(order_data, OrderFactory.build_user_context())
 
     assert order.total == Decimal("37.50")
     assert order.status == OrderStatus.PAYMENT_PENDING
@@ -59,16 +59,13 @@ async def test_create_order_reserves_stock_creates_payment_and_publishes_event()
 
 @pytest.mark.asyncio
 async def test_create_order_does_not_publish_when_stock_is_insufficient():
-    service, product_id, inventory, payment_repository, publisher = make_service()
+    service, product, inventory, payment_repository, publisher = make_service()
     inventory.total_quantity = 2
     inventory.reserved_quantity = 1
 
-    from domains.inventory.inventory_exceptions import InsufficientStock
-
     with pytest.raises(InsufficientStock):
         await service.create_order(
-            CreateOrder(items=[{"product_id": product_id, "quantity": 3}]),
-            {"sub": str(uuid4())},
+            OrderFactory.build_create(product.id), OrderFactory.build_user_context()
         )
 
     payment_repository.create_payment.assert_not_awaited()

@@ -6,6 +6,7 @@ import pytest
 
 from domains.inventory.inventory_exceptions import InventoryNotFound
 from domains.inventory.services.inventory_service import InventoryService
+from tests.domains.inventory.factories import InventoryFactory
 
 
 def make_service():
@@ -45,7 +46,7 @@ async def test_add_stock_rejects_missing_inventory():
 @pytest.mark.asyncio
 async def test_add_stock_delegates_existing_inventory():
     service, repository = make_service()
-    inventory = object()
+    inventory = InventoryFactory.build_model()
     repository.get_item_by_product_id.return_value = inventory
     repository.add_stock.return_value = inventory
 
