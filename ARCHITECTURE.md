@@ -11,7 +11,8 @@ Tudo que fala de usuário mora em `domains/users/`:
 ```
 domains/
   users/
-    users_controller.py            # rotas HTTP + as factories de DI do domínio
+    users_controller.py            # rotas HTTP
+    dependencies.py                # composição das dependências FastAPI
     models/
       users_model.py               # tabelas (SQLAlchemy)
     repositories/
@@ -22,6 +23,16 @@ domains/
       users_auth_service.py        # regra de negócio
   health/
     health_controller.py           # domínio simples: só o controller
+  orders/
+    dependencies.py                # composição do caso de uso HTTP
+    repositories/
+      orders_repository.py         # persistência de pedidos
+    services/
+      orders_service.py            # criação do pedido e publicação do evento
+    consumers/
+      order_consumer.py            # conexão, topologia e ciclo RabbitMQ
+      order_event_processor.py     # processamento do evento de pedido
+      retry_policy.py              # retry e dead-letter
 
 api/v1/routers.py                  # junta os routers de todos os domínios
 core/
@@ -57,6 +68,27 @@ SQLAlchemy, services aplicam as regras e controllers declaram o schema de
 resposta (`response_model`). Assim, a camada de negócio não fica presa ao
 formato HTTP.
 
+Consumers e adapters são portas de infraestrutura: o consumer recebe a
+mensagem e delega o caso de uso; o processamento de pagamento fica separado
+da topologia RabbitMQ. Adapters encapsulam APIs externas, como o gateway de
+pagamentos, e não devem ser importados por controllers.
+
+Os testes ficam fora de `domains/`, mas seguem a mesma organização:
+
+```
+tests/
+  conftest.py
+  domains/<domain>/
+    factories.py
+    test_<feature>.py
+```
+
+Factories de teste usam a convenção `<Domain>Factory.build_<tipo>(**overrides)`.
+Elas constroem schemas ou objetos simples com defaults válidos; não são uma
+camada da aplicação e não devem ser importadas pelo código de produção. O
+domínio `health` não tem factory porque seu endpoint não recebe nem persiste
+dados.
+
 Repositories não fazem `commit` nem `rollback`. Eles adicionam, consultam e
 fazem `flush` quando precisam gerar IDs. O service do caso de uso controla a
 transação inteira, fazendo um único `commit` ou `rollback`. Isso evita salvar
@@ -64,31 +96,24 @@ um produto sem seu estoque, ou um usuário parcialmente criado.
 
 ## Injeção de dependência
 
-A fiação fica **no próprio controller**, numa função `get_*` logo acima
-das rotas, e as rotas pedem o que precisam com `Depends`:
+A fiação fica em `dependencies.py` dentro do domínio, e as rotas pedem o
+service por `Depends`:
 
 ```python
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-
-from core.database import get_db
-from domains.users.repositories.users_auth_repository import UsersAuthRepository
-from domains.users.schemas.users_schemas import UsersAuth
+from domains.users.dependencies import get_auth_service
+from domains.users.schemas.users_schemas import UserRegister
 from domains.users.services.users_auth_service import UsersAuthService
 
 router = APIRouter()
 
 
-def get_auth_service(db: Session = Depends(get_db)) -> UsersAuthService:
-    return UsersAuthService(UsersAuthRepository(db))
-
-
 @router.post("/register")
-def register_user(
-    user_data: UsersAuth,
+async def register_user(
+  user_data: UserRegister,
     auth_service: UsersAuthService = Depends(get_auth_service),
-) -> bool:
-    return auth_service.register(user_data)
+) -> None:
+  await auth_service.register(user_data)
 ```
 
 Três coisas para guardar:
@@ -101,10 +126,9 @@ Três coisas para guardar:
   dependência, não o corpo da rota:
   `app.dependency_overrides[get_auth_service] = lambda: FakeAuthService()`.
 
-> Existia antes um `users_dependencies.py` com aliases
-> `Annotated[..., Depends(...)]`. Foi removido: para o tamanho deste
-> projeto era um arquivo a mais para abrir só para descobrir de onde vinha
-> o objeto. `Depends` direto na assinatura diz tudo ali mesmo.
+Cada domínio mantém suas factories de composição em `dependencies.py`. Não há
+um módulo global de factories: isso evita que a composição de um domínio crie
+dependências artificiais nos demais.
 
 A autorização compartilhada fica em `api/middlewares/auth_guard.py`:
 `auth_guard` valida o token e `require_admin` verifica o papel do usuário.
@@ -153,9 +177,10 @@ Exemplo com `products`:
 5. `domains/products/repositories/products_repository.py` — as queries.
 6. `domains/products/services/products_service.py` — a regra. Recebe as
    dependências pelo `__init__`, sem importar `fastapi`.
-7. `domains/products/products_controller.py` — `router = APIRouter()`, a
-   factory `get_products_service` e as rotas.
-8. `api/v1/routers.py` — `include_router` com prefixo e tag.
+7. `domains/products/dependencies.py` — factories de composição dos services.
+8. `domains/products/products_controller.py` — `router = APIRouter()` e as
+  rotas.
+9. `api/v1/routers.py` — `include_router` com prefixo e tag.
 
 Os passos que costumam ser esquecidos são o 2 e o 8: sem o 2 a migration
 sai vazia, e sem o 8 a rota simplesmente não existe — nos dois casos sem
