@@ -4,10 +4,8 @@ services:
   db:
     image: postgres:17
     container_name: ecommerce_db
-    environment:
-      POSTGRES_USER: ecommerce
-      POSTGRES_PASSWORD: ecommerce
-      POSTGRES_DB: ecommerce
+    env_file:
+      - .env
     ports:
       - "5432:5432"
     volumes:
@@ -21,17 +19,10 @@ services:
   api:
     build: .
     container_name: ecommerce_api
+    env_file:
+      - .env
     ports:
       - "8000:8000"
-    environment:
-      - WATCHFILES_FORCE_POLLING=true
-      - POSTGRES_HOST=db
-      - POSTGRES_USER=ecommerce
-      - POSTGRES_PASSWORD=ecommerce
-      - POSTGRES_DB=ecommerce
-      - RABBITMQ_CONNECTION_URL=amqp://app:app123@rabbitmq:5672/
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - JWT_EXPIRE_IN=${JWT_EXPIRE_IN:-30}
     volumes:
       - ./:/app
       - /app/.venv
@@ -42,12 +33,11 @@ services:
 
   rabbitmq:
     image: rabbitmq:4-management
+    env_file:
+      - .env
     ports:
       - "5672:5672"
       - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: app
-      RABBITMQ_DEFAULT_PASS: app123
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 5s
@@ -58,11 +48,13 @@ services:
     build: .
     container_name: ecommerce_consumer
     command: python -m domains.orders.consumers.order_consumer
+    env_file:
+      - .env
     volumes:
       - .:/app
-    environment:
-      RABBITMQ_CONNECTION_URL: amqp://app:app123@rabbitmq:5672/
     depends_on:
+      db:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
 
