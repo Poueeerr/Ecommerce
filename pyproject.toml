@@ -14,6 +14,7 @@ dependencies = [
     "pyjwt>=2.10",            # tokens JWT
     "bcrypt>=4.2",            # hash de senha
     "aio-pika>=9.5",          # integração assíncrona com RabbitMQ
+    "mercadopago>=2.3.0",     # integração com a API do Mercado Pago
 ]
 
 [build-system]

@@ -8,4 +8,5 @@ class OrderCreatedEvent(BaseModel):
     event_id: uuid.UUID
     order_id: uuid.UUID
     user_id: uuid.UUID
+    email: str
     total: Decimal

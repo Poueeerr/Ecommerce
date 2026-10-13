@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 
-from domains.orders.events.order_created import OrderCreatedEvent
+from domains.orders.schemas.event_schema import OrderCreatedEvent
 from domains.orders.orders_enums import OrderStatus
 from domains.orders.schemas.orders_schemas import CreateOrder
 from domains.orders.services.orders_serivce import OrdersService

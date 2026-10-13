@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from domains.inventory.inventory_exceptions import InsufficientStock, InventoryNotFound
 from domains.inventory.repositories.inventory_repository import InventoryRepository
-from domains.orders.events.order_created import OrderCreatedEvent
+from domains.orders.schemas.event_schema import OrderCreatedEvent
 from domains.orders.events.order_publisher import OrderPublisher
 from domains.orders.models.order_item_model import OrderItemsModel
 from domains.orders.models.orders_model import OrdersModel
@@ -91,6 +91,7 @@ class OrdersService:
             event_id=uuid.uuid4(),
             order_id=order.id,
             user_id=order.user_id,
+            email=current_user["email"],
             total=order.total,
         )
         await self.order_publisher.publish_order_created(event)

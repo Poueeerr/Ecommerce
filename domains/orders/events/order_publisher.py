@@ -2,7 +2,7 @@ import json
 
 import aio_pika
 
-from domains.orders.events.order_created import OrderCreatedEvent
+from domains.orders.schemas.event_schema import OrderCreatedEvent
 from domains.orders.orders_enums import OrderEvents
 
 

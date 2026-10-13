@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     RABBITMQ_DEFAULT_PASS: str = "app123"
     RABBITMQ_CONNECTION_URL: str = "amqp://app:app123@localhost:5672/"
 
+    MERCADO_PAGO_ACCESS_TOKEN: str
+    URL_BASE_ECOMM: str
+
     jwt_secret_key: str = Field(
         default="change-me",
         validation_alias=AliasChoices("JWT_SECRET_KEY", "jwt_secret_key"),
