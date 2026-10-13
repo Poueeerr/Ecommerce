@@ -10,6 +10,7 @@ class _FromModel(BaseModel):
 class PaymentsSchema(_FromModel):
     id: uuid.UUID
 
+
 class PaymentWebhook(BaseModel):
     provider_payment_id: str
-    #Resto das informações retornadas pelo gateway
+    # Resto das informações retornadas pelo gateway

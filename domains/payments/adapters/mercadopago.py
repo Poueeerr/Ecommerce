@@ -29,10 +29,7 @@ class MercadoPagoAdapter:
                 email=email,
             ),
             external_reference=str(order_id),
-            notification_url=(
-                f"{settings.URL_BASE_ECOMM}"
-                "/api/v1/payments/webhook/payment-update"
-            ),
+            notification_url=(f"{settings.URL_BASE_ECOMM}/api/v1/payments/webhook/payment-update"),
         )
 
         preference_data = preference.model_dump(mode="python")
@@ -42,9 +39,7 @@ class MercadoPagoAdapter:
         response = self.sdk.preference().create(preference_data)
 
         if response["status"] not in (200, 201):
-            raise RuntimeError(
-                f"Erro ao criar preferência: {response}"
-            )
+            raise RuntimeError(f"Erro ao criar preferência: {response}")
 
         result = response["response"]
 

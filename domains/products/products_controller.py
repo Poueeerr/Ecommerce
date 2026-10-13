@@ -3,13 +3,12 @@ from decimal import Decimal
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.middlewares.auth_guard import require_admin
-from core.database import get_db
-from domains.inventory.repositories.inventory_repository import InventoryRepository
-from domains.inventory.services.inventory_service import InventoryService
-from domains.products.repositories.products_repository import ProductsRepository
+from domains.products.dependencies import (
+    get_product_registration_service,
+    get_products_service,
+)
 from domains.products.schemas.products_schemas import (
     PaginatedProduct,
     Product,
@@ -20,20 +19,6 @@ from domains.products.services.product_registration_service import ProductRegist
 from domains.products.services.products_service import ProductsService
 
 router = APIRouter()
-
-
-def get_products_service(db: AsyncSession = Depends(get_db)) -> ProductsService:
-    return ProductsService(ProductsRepository(db))
-
-
-def get_product_registration_service(
-    db: AsyncSession = Depends(get_db),
-) -> ProductRegistrationService:
-    return ProductRegistrationService(
-        db,
-        ProductsService(ProductsRepository(db)),
-        InventoryService(InventoryRepository(db)),
-    )
 
 
 @router.get("/")
@@ -60,9 +45,10 @@ async def get_all(
 
 @router.get("/category/{category}", response_model=list[Product])
 async def get_product_by_category(
-    category: str, products_service: ProductsService = Depends(get_products_service)
+    category: str,
+    products_service: ProductsService = Depends(get_products_service),
 ) -> list[Product]:
-    return await products_service.get_by_category(category)
+    return await products_service.get_by_category(category, offset=0, limit=10)
 
 
 @router.get("/paginated")

@@ -2,8 +2,8 @@ import json
 
 import aio_pika
 
-from domains.orders.schemas.event_schema import OrderCreatedEvent
 from domains.orders.orders_enums import OrderEvents
+from domains.orders.schemas.event_schema import OrderCreatedEvent
 
 
 class OrderPublisher:

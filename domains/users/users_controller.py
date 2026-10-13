@@ -1,12 +1,9 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.middlewares.auth_guard import auth_guard, require_admin
-from core.database import get_db
-from core.jwt_handler import JwtHandler
-from domains.users.repositories.users_auth_repository import UsersAuthRepository
+from domains.users.dependencies import get_auth_service
 from domains.users.schemas.users_schemas import (
     Token,
     UserLogin,
@@ -16,10 +13,6 @@ from domains.users.schemas.users_schemas import (
 from domains.users.services.users_auth_service import UsersAuthService
 
 router = APIRouter()
-
-
-def get_auth_service(db: AsyncSession = Depends(get_db)) -> UsersAuthService:
-    return UsersAuthService(db, UsersAuthRepository(db), JwtHandler())
 
 
 @router.get("/")

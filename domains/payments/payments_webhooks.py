@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends
 
-from domains.payments.payments_controller import get_payments_service
+from domains.payments.dependencies import get_payments_service
 from domains.payments.schemas.payments_schema import PaymentWebhook
 from domains.payments.services.payments_service import PaymentsService
 
 router = APIRouter()
+
 
 @router.post("/webhook/payment-update")
 async def payment_update(

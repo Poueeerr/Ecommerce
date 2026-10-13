@@ -24,7 +24,5 @@ class PaymentsRepository:
         if lock:
             query = query.with_for_update()
 
-        result = await self.db.execute(
-            query
-        )
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()

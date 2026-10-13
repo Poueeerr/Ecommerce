@@ -1,23 +1,14 @@
-
 import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.middlewares.auth_guard import require_admin
-from core.database import get_db
-from domains.payments.repositories.payments_repository import PaymentsRepository
+from domains.payments.dependencies import get_payments_service
 from domains.payments.schemas.payment_checkout_schema import PaymentCheckoutResponse
 from domains.payments.services.payments_service import PaymentsService
 
 router = APIRouter()
-
-
-def get_payments_service(db: AsyncSession = Depends(get_db)) -> PaymentsService:
-    return PaymentsService(
-        PaymentsRepository(db),
-    )
 
 
 @router.get("/")
