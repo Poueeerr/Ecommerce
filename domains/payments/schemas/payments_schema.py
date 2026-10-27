@@ -11,6 +11,14 @@ class PaymentsSchema(_FromModel):
     id: uuid.UUID
 
 
+class PaymentWebhookData(BaseModel):
+    id: str
+
+
 class PaymentWebhook(BaseModel):
-    provider_payment_id: str
-    # Resto das informações retornadas pelo gateway
+    model_config = ConfigDict(extra="ignore")
+
+    id: str | int | None = None
+    type: str
+    action: str | None = None
+    data: PaymentWebhookData

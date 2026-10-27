@@ -6,7 +6,7 @@ class OrderStatus(StrEnum):
     PAYMENT_PENDING = "payment_pending"
     CANCELED = "canceled"
     COMPLETED = "completed"
-
+    PROCESSING = "processing"
 
 class OrderEvents(StrEnum):
     CREATED = "orders.created"

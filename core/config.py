@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     RABBITMQ_CONNECTION_URL: str = "amqp://app:app123@localhost:5672/"
 
     MERCADO_PAGO_ACCESS_TOKEN: str
+    MERCADO_PAGO_WEBHOOK_SECRET: str
     URL_BASE_ECOMM: str
 
     jwt_secret_key: str = Field(

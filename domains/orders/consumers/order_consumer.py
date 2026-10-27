@@ -18,11 +18,13 @@ async def process_order(
     message: aio_pika.IncomingMessage,
     retry_exchange: aio_pika.Exchange,
     dead_letter_exchange: aio_pika.Exchange,
-):
+) -> None:
     try:
         await process_order_event(message)
         await message.ack()
     except Exception as error:
+        print(f"Consumer callback failed: {error}")
+
         await handle_failed_message(
             message,
             error,
@@ -31,12 +33,13 @@ async def process_order(
         )
 
 
-async def main():
-    connection = await aio_pika.connect_robust(settings.RABBITMQ_CONNECTION_URL)
+async def main() -> None:
+    connection = await aio_pika.connect_robust(
+        settings.RABBITMQ_CONNECTION_URL
+    )
 
     async with connection:
         channel = await connection.channel()
-
         await channel.set_qos(prefetch_count=1)
 
         exchange = await channel.declare_exchange(
@@ -44,11 +47,13 @@ async def main():
             aio_pika.ExchangeType.DIRECT,
             durable=True,
         )
+
         retry_exchange = await channel.declare_exchange(
             "orders.retry",
             aio_pika.ExchangeType.DIRECT,
             durable=True,
         )
+
         dead_letter_exchange = await channel.declare_exchange(
             "orders.dlx",
             aio_pika.ExchangeType.DIRECT,
@@ -74,12 +79,17 @@ async def main():
                 "x-dead-letter-routing-key": OrderEvents.CREATED,
             },
         )
-        await retry_queue.bind(retry_exchange, routing_key=OrderEvents.CREATED)
+
+        await retry_queue.bind(
+            retry_exchange,
+            routing_key=OrderEvents.CREATED,
+        )
 
         dead_letter_queue = await channel.declare_queue(
             "order_processing.dlq",
             durable=True,
         )
+
         await dead_letter_queue.bind(
             dead_letter_exchange,
             routing_key=OrderEvents.CREATED,
