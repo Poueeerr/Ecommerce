@@ -24,6 +24,10 @@ dist/
 .DS_Store
 Thumbs.db
 
+# Independent application repositories
+backend/
+frontend/
+
 # Claude Code (config pessoal)
 .claude/settings.local.json
 
